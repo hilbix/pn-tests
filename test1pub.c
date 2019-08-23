@@ -4,8 +4,6 @@
 
 #define DP(A...)	debugprintf(__FILE__, __LINE__, __FUNCTION__, A)
 
-#include "private.h"
-
 void
 debugprintf(const char *file, int line, const char *fn, const char *s, ...)
 {
@@ -22,6 +20,7 @@ int main()
 {
   enum pubnub_res rslt;
   pubnub_t *pbp = pubnub_alloc();
+  const char	*pk, *ps;
 
   if (NULL == pbp)
     {
@@ -29,7 +28,16 @@ int main()
       return -1;
     }
 
-  pubnub_init(pbp, PUBNUB_PUB_KEY, PUBNUB_SUB_KEY);
+  pk	= getenv("PUBNUB_PUB_KEY");
+  ps	= getenv("PUBNUB_SUB_KEY");
+  if (!pk && !ps)
+    {
+      printf("missing environment PUBNUB_PUB_KEY/PUBNUB_SUB_KEY\n");
+      pubnub_free(pbp);
+      return -1;
+    }
+
+  pubnub_init(pbp, pk, ps);
   DP("init %p", pbp);
 
   rslt = pubnub_publish(pbp, "pubnub_onboarding_channel", "\"Hello from C sync\"");
